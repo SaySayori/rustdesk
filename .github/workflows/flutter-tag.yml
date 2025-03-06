@@ -9,6 +9,9 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-[0-9]+'
 
+env:
+  RUST_VERSION: "1.76.0"
+
 jobs:
   build-for-windows-flutter:
     name: Build for Windows
@@ -19,7 +22,25 @@ jobs:
         with:
           submodules: recursive
       
-      # Add Flutter setup and build steps here
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+      
+      - name: Workaround for network errors
+        run: |
+          echo "CARGO_HTTP_MULTIPLEXING=false" >> $GITHUB_ENV
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0'
+      
+      - name: Build Flutter app
+        run: |
+          flutter pub get
+          flutter build windows --release
 
   run-flutter-tag-build:
     uses: ./.github/workflows/flutter-build.yml
