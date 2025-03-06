@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   pull_request:
     paths-ignore:
-    - "docs/**"
-    - "README.md"
+      - "docs/**"
+      - "README.md"
   push:
     branches:
       - master
@@ -19,6 +19,24 @@ on:
 
 jobs:
   run-ci:
-    uses: ./.github/workflows/flutter-build.yml
-    with:
-      upload-artifact: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Workaround for curl 8.0 issue
+        run: |
+          if rustc +1.75 --version --verbose | grep -q '^release: 1\.7[01]\.'; then
+            echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV
+          fi
+
+      - name: Run Flutter CI
+        uses: ./.github/workflows/flutter-build.yml
+        with:
+          upload-artifact: false
