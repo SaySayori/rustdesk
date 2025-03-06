@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-jobs:
+          
   run-flutter-tag-build:
     uses: ./.github/workflows/flutter-build.yml
     secrets: inherit
