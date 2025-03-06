@@ -8,39 +8,19 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+-[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-[0-9]+'
+
 jobs:
   build-for-windows-flutter:
-    name: ${{ matrix.job.target }}
-    needs: [build-RustDeskTempTopMostWindow, generate-bridge]
-    runs-on: ${{ matrix.job.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        job: 
-        - {
-              target: x86_64-pc-windows-msvc,
-              os: windows-2022,
-              arch: x86_64,
-              vcpkg-triplet: x64-windows-static,
-            }
+    name: Build for Windows
+    runs-on: windows-2022
     steps:
-      - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-      - name: Fix spurious network errors in curl 8.0
-        if: "startsWith(matrix.job.os, 'windows')"
-        run: |
-          if rustc +1.75 --version --verbose | grep -q '^release: 1\\.7[01]\\.'; then
-            echo "CARGO_HTTP_MULTIPLEXING=false" >> $GITHUB_ENV
-          fi
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          
+      
+      # Add Flutter setup and build steps here
+
   run-flutter-tag-build:
     uses: ./.github/workflows/flutter-build.yml
     secrets: inherit
