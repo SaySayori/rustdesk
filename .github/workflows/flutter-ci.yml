@@ -1,42 +1,22 @@
 name: Full Flutter CI
 
-on:
-  workflow_dispatch:
-  pull_request:
-    paths-ignore:
-      - "docs/**"
-      - "README.md"
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - ".github/**"
-      - "docs/**"
-      - "README.md"
-      - "res/**"
-      - "appimage/**"
-      - "flatpak/**"
+on: [push, pull_request]
 
 jobs:
-  run-ci:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '2.8.0'
 
-      - name: Workaround for curl 8.0 issue
-        run: |
-          if rustc +1.75 --version --verbose | grep -q '^release: 1\.7[01]\.'; then
-            echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV
-          fi
+    - name: Install dependencies
+      run: flutter pub get
 
-      - name: Run Flutter CI
-        uses: ./.github/workflows/flutter-build.yml
-        with:
-          upload-artifact: false
+    - name: Run tests
+      run: flutter test
